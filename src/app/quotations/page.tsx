@@ -12,6 +12,7 @@ interface ServiceItem {
   price: number;
   description: string;
   date: string;
+  event: string; // ✅ per-service
 }
 
 interface Quotation {
@@ -25,6 +26,7 @@ interface Quotation {
   discount: number;
   total_price: number;
   created_at: string;
+  // ❌ NO top-level event
 }
 
 export default function QuotationsPage() {
@@ -42,9 +44,7 @@ export default function QuotationsPage() {
     useState<Quotation | null>(null);
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -78,18 +78,15 @@ export default function QuotationsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Logout → localhost:3000 (home/login page)
   const handleLogout = async () => {
     if (!confirm("Are you sure you want to logout?")) return;
-
     try {
       await fetch("/api/logout", { method: "POST" });
     } catch (err) {
       console.error("Logout API error:", err);
     }
-
     localStorage.removeItem("user");
-    window.location.href = "/"; // ✅ localhost:3000
+    window.location.href = "/";
   };
 
   const handleCreate = () => {
@@ -102,9 +99,7 @@ export default function QuotationsPage() {
     setIsModalOpen(true);
   };
 
-  const handleView = (q: Quotation) => {
-    setViewingQuotation(q);
-  };
+  const handleView = (q: Quotation) => setViewingQuotation(q);
 
   const handlePrint = (q: Quotation) => {
     const printWindow = window.open("", "_blank");
@@ -182,6 +177,7 @@ export default function QuotationsPage() {
                   <tr>
                     <th style="width:50px">S.No</th>
                     <th>Service Description</th>
+                    <th style="width:120px">Event</th>
                     <th style="width:120px">Date</th>
                     <th style="width:100px">Amount</th>
                   </tr>
@@ -209,6 +205,7 @@ export default function QuotationsPage() {
                               : ""
                           }
                         </td>
+                        <td class="center-cell">${srv.event || "-"}</td>
                         <td class="center-cell">${dateStr}</td>
                         <td class="numeric-cell">${Number(srv.price || 0).toFixed(2)}</td>
                       </tr>
@@ -218,19 +215,19 @@ export default function QuotationsPage() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="3" class="numeric-cell" style="font-weight:bold">Sub Total:</td>
+                    <td colspan="4" class="numeric-cell" style="font-weight:bold">Sub Total:</td>
                     <td class="numeric-cell" style="font-weight:bold">Rs ${Number(
                       q.sub_total
                     ).toFixed(2)}</td>
                   </tr>
                   <tr>
-                    <td colspan="3" class="numeric-cell" style="color:red">Discount:</td>
+                    <td colspan="4" class="numeric-cell" style="color:red">Discount:</td>
                     <td class="numeric-cell" style="color:red">- Rs ${Number(
                       q.discount
                     ).toFixed(2)}</td>
                   </tr>
                   <tr class="total-row">
-                    <td colspan="3" class="numeric-cell">GRAND TOTAL:</td>
+                    <td colspan="4" class="numeric-cell">GRAND TOTAL:</td>
                     <td class="numeric-cell">Rs ${Number(q.total_price).toFixed(
                       2
                     )}</td>
@@ -255,15 +252,11 @@ export default function QuotationsPage() {
 
     printWindow.document.close();
     printWindow.focus();
-
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    setTimeout(() => printWindow.print(), 500);
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this quotation?")) return;
-
     setDeletingId(id);
     try {
       const res = await fetch(`/api/quotations?id=${id}`, {
@@ -279,9 +272,12 @@ export default function QuotationsPage() {
     }
   };
 
+  // ✅ Show "Service (Event)" per item
   const serviceNamesPreview = (q: Quotation) =>
     Array.isArray(q.services)
-      ? q.services.map((s) => s.name).join(", ")
+      ? q.services
+          .map((s) => (s.event ? `${s.name} (${s.event})` : s.name))
+          .join(", ")
       : "";
 
   return (
@@ -299,14 +295,12 @@ export default function QuotationsPage() {
             >
               Services
             </Link>
-
             <Link
               href="/invoices"
               className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
             >
               Invoices
             </Link>
-
             <Link
               href="/costing"
               className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
@@ -381,7 +375,6 @@ export default function QuotationsPage() {
               )}
             </div>
 
-            {/* ✅ Logout Button → localhost:3000 */}
             <button
               onClick={handleLogout}
               className="rounded-full border border-red-600 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-red-600 shadow-sm transition hover:bg-red-600 hover:text-white"
@@ -399,7 +392,7 @@ export default function QuotationsPage() {
                 <th className="px-2 py-2 tracking-wider">Client</th>
                 <th className="px-2 py-2 tracking-wider">Email</th>
                 <th className="px-2 py-2 tracking-wider">Phone</th>
-                <th className="px-2 py-2 tracking-wider">Services</th>
+                <th className="px-2 py-2 tracking-wider">Services / Events</th>
                 <th className="px-2 py-2 text-right tracking-wider">
                   Sub Total
                 </th>
@@ -465,7 +458,7 @@ export default function QuotationsPage() {
                       {q.client_phone_number || "—"}
                     </td>
                     <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[160px]"
+                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[200px]"
                       title={serviceNamesPreview(q)}
                     >
                       {serviceNamesPreview(q) || "—"}

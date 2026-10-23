@@ -7,6 +7,7 @@ interface ServiceItem {
   price: number;
   description: string;
   date: string;
+  event: string; // ✅ per-service
 }
 
 interface Quotation {
@@ -15,7 +16,7 @@ interface Quotation {
   client_name: string;
   client_email: string | null;
   client_phone_number: string | null;
-  services: ServiceItem[]; // ✅ jsonb
+  services: ServiceItem[];
   sub_total: number;
   discount: number;
   total_price: number;
@@ -77,9 +78,14 @@ export default function CreateQuotationModal({
     discount: isEditing ? quotation.discount.toString() : "",
   });
 
-  // ✅ Preload services from jsonb array
   const [selectedServices, setSelectedServices] = useState<
-    { name: string; price: string; description: string; date: string }[]
+    {
+      name: string;
+      price: string;
+      description: string;
+      date: string;
+      event: string;
+    }[]
   >(
     isEditing && Array.isArray(quotation.services) && quotation.services.length > 0
       ? quotation.services.map((s) => ({
@@ -87,8 +93,9 @@ export default function CreateQuotationModal({
           price: s.price != null ? String(s.price) : "",
           description: s.description || "",
           date: s.date || "",
+          event: s.event || "",
         }))
-      : [{ name: "", price: "", description: "", date: "" }]
+      : [{ name: "", price: "", description: "", date: "", event: "" }]
   );
 
   const [submitting, setSubmitting] = useState(false);
@@ -96,7 +103,7 @@ export default function CreateQuotationModal({
 
   const handleServiceChange = (
     index: number,
-    field: "name" | "description" | "date",
+    field: "name" | "description" | "date" | "event",
     value: string
   ) => {
     const newServices = [...selectedServices];
@@ -116,7 +123,7 @@ export default function CreateQuotationModal({
   const addService = () => {
     setSelectedServices([
       ...selectedServices,
-      { name: "", price: "", description: "", date: "" },
+      { name: "", price: "", description: "", date: "", event: "" },
     ]);
   };
 
@@ -130,7 +137,6 @@ export default function CreateQuotationModal({
   };
 
   const discount = parseFloat(form.discount) || 0;
-
   const subTotal = selectedServices.reduce(
     (sum, item) => sum + (parseFloat(item.price) || 0),
     0
@@ -154,12 +160,13 @@ export default function CreateQuotationModal({
         : "/api/quotations";
       const method = isEditing ? "PATCH" : "POST";
 
-      // ✅ Build jsonb array of service objects
+      // ✅ event embedded inside each service object
       const servicesJsonb: ServiceItem[] = validServices.map((s) => ({
         name: s.name,
         price: parseFloat(s.price) || 0,
         description: s.description || "",
         date: s.date || "",
+        event: s.event || "",
       }));
 
       const res = await fetch(url, {
@@ -170,7 +177,7 @@ export default function CreateQuotationModal({
           client_name: form.client_name,
           client_email: form.client_email,
           client_phone_number: form.client_phone_number,
-          services: servicesJsonb, // ✅ send jsonb
+          services: servicesJsonb,
           sub_total: subTotal,
           discount,
           total_price: totalPrice,
@@ -258,7 +265,7 @@ export default function CreateQuotationModal({
             </Field>
           </div>
 
-          {/* MULTIPLE SERVICES SECTION */}
+          {/* SERVICES */}
           <div className="border-t border-gray-300 pt-4 mt-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-black tracking-wider">
@@ -315,7 +322,22 @@ export default function CreateQuotationModal({
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                {/* ✅ Event per-service */}
+                <div className="flex gap-2 mb-2">
+                  <div className="w-1/2">
+                    <label className="block text-[10px] text-gray-500 mb-1">
+                      Event
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Wedding, Reception..."
+                      value={srv.event}
+                      onChange={(e) =>
+                        handleServiceChange(index, "event", e.target.value)
+                      }
+                      className={inputClass}
+                    />
+                  </div>
                   <div className="w-1/2">
                     <label className="block text-[10px] text-gray-500 mb-1">
                       Date
@@ -329,25 +351,21 @@ export default function CreateQuotationModal({
                       className={inputClass}
                     />
                   </div>
+                </div>
 
-                  <div className="w-1/2">
-                    <label className="block text-[10px] text-gray-500 mb-1">
-                      Description (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter details..."
-                      value={srv.description}
-                      onChange={(e) =>
-                        handleServiceChange(
-                          index,
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      className={inputClass}
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[10px] text-gray-500 mb-1">
+                    Description (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter details..."
+                    value={srv.description}
+                    onChange={(e) =>
+                      handleServiceChange(index, "description", e.target.value)
+                    }
+                    className={inputClass}
+                  />
                 </div>
 
                 {selectedServices.length > 1 && (
@@ -392,39 +410,37 @@ export default function CreateQuotationModal({
           </div>
 
           <div className="bg-gray-50 p-4 text-xs text-black border border-gray-200 tracking-wider">
-            <div className="flex justify-between py-1 tracking-wider">
-              <span className="text-gray-700 tracking-wider">Sub Total:</span>
-              <span className="font-medium text-black tracking-wider">
+            <div className="flex justify-between py-1">
+              <span className="text-gray-700">Sub Total:</span>
+              <span className="font-medium text-black">
                 Rs. {subTotal.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between py-1 tracking-wider">
-              <span className="text-gray-700 tracking-wider">Discount:</span>
-              <span className="font-medium text-black tracking-wider">
+            <div className="flex justify-between py-1">
+              <span className="text-gray-700">Discount:</span>
+              <span className="font-medium text-black">
                 - Rs. {discount.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between border-t border-gray-300 py-1 font-bold text-black tracking-wider">
-              <span className="tracking-wider">Total Price:</span>
-              <span className="tracking-wider">
-                Rs. {totalPrice.toFixed(2)}
-              </span>
+            <div className="flex justify-between border-t border-gray-300 py-1 font-bold text-black">
+              <span>Total Price:</span>
+              <span>Rs. {totalPrice.toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2 tracking-wider">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="border border-gray-300 px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100 disabled:opacity-50 tracking-wider"
+              className="border border-gray-300 px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="bg-black px-4 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 disabled:opacity-60 tracking-wider"
+              className="bg-black px-4 py-1.5 text-xs font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
             >
               {submitting
                 ? "Saving..."

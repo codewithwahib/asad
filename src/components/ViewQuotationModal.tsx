@@ -5,6 +5,7 @@ interface ServiceItem {
   price: number;
   description: string;
   date: string;
+  event: string; // ✅ per-service
 }
 
 interface Quotation {
@@ -100,13 +101,13 @@ export default function ViewQuotationModal({ quotation, onClose }: Props) {
         </div>
 
         {/* Services Table */}
-        {/* ✅ Rounded table wrapper + overflow-hidden so corners clip the table */}
         <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-300">
           <table className="min-w-full text-[11px] tracking-wider">
             <thead className="bg-gray-50 text-left text-[9px] font-semibold uppercase text-black">
               <tr>
                 <th className="px-2 py-2 tracking-wider w-12">S.No</th>
                 <th className="px-2 py-2 tracking-wider">Service</th>
+                <th className="px-2 py-2 tracking-wider w-28">Event</th>
                 <th className="px-2 py-2 tracking-wider w-28">Date</th>
                 <th className="px-2 py-2 tracking-wider text-right w-24">
                   Price
@@ -117,7 +118,7 @@ export default function ViewQuotationModal({ quotation, onClose }: Props) {
               {serviceList.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-gray-500 tracking-wider"
                   >
                     No services
@@ -136,6 +137,9 @@ export default function ViewQuotationModal({ quotation, onClose }: Props) {
                           &quot;{srv.description}&quot;
                         </div>
                       )}
+                    </td>
+                    <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
+                      {srv.event || "—"}
                     </td>
                     <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
                       {formatDate(srv.date)}
