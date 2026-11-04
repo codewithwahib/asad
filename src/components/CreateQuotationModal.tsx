@@ -7,7 +7,7 @@ interface ServiceItem {
   price: number;
   description: string;
   date: string;
-  event: string; // ✅ per-service
+  event: string;
 }
 
 interface Quotation {
@@ -69,13 +69,12 @@ export default function CreateQuotationModal({
   }
 
   const [form, setForm] = useState({
-    quotation_number: isEditing
-      ? quotation.quotation_number
-      : nextQuotationNumber,
+    quotation_number: isEditing ? quotation.quotation_number : nextQuotationNumber,
     client_name: isEditing ? quotation.client_name : "",
     client_email: isEditing ? quotation.client_email || "" : "",
     client_phone_number: isEditing ? quotation.client_phone_number || "" : "",
     discount: isEditing ? quotation.discount.toString() : "",
+    total_price: isEditing ? quotation.total_price.toString() : "0", // ✅ Editable Total Price
   });
 
   const [selectedServices, setSelectedServices] = useState<
@@ -137,17 +136,19 @@ export default function CreateQuotationModal({
   };
 
   const discount = parseFloat(form.discount) || 0;
+  const manualTotalPrice = parseFloat(form.total_price) || 0;
+
+  // SubTotal hamesha auto calculate hoga services se
   const subTotal = selectedServices.reduce(
     (sum, item) => sum + (parseFloat(item.price) || 0),
     0
   );
-  const totalPrice = Math.max(subTotal - discount, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const validServices = selectedServices.filter((s) => s.name && s.price);
+    const validServices = selectedServices.filter((s) => s.name);
     if (validServices.length === 0) {
       setError("Please select at least one service");
       return;
@@ -160,7 +161,6 @@ export default function CreateQuotationModal({
         : "/api/quotations";
       const method = isEditing ? "PATCH" : "POST";
 
-      // ✅ event embedded inside each service object
       const servicesJsonb: ServiceItem[] = validServices.map((s) => ({
         name: s.name,
         price: parseFloat(s.price) || 0,
@@ -180,7 +180,7 @@ export default function CreateQuotationModal({
           services: servicesJsonb,
           sub_total: subTotal,
           discount,
-          total_price: totalPrice,
+          total_price: manualTotalPrice, // ✅ Manual price save hogi
         }),
       });
 
@@ -322,7 +322,6 @@ export default function CreateQuotationModal({
                   </div>
                 </div>
 
-                {/* ✅ Event per-service */}
                 <div className="flex gap-2 mb-2">
                   <div className="w-1/2">
                     <label className="block text-[10px] text-gray-500 mb-1">
@@ -409,22 +408,33 @@ export default function CreateQuotationModal({
             </Field>
           </div>
 
-          <div className="bg-gray-50 p-4 text-xs text-black border border-gray-200 tracking-wider">
-            <div className="flex justify-between py-1">
+          {/* ✅ Total Price Section with Editable Total */}
+          <div className="bg-gray-50 p-4 text-xs text-black border border-gray-200 tracking-wider space-y-2">
+            <div className="flex justify-between items-center py-1">
               <span className="text-gray-700">Sub Total:</span>
               <span className="font-medium text-black">
                 Rs. {subTotal.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between py-1">
+            <div className="flex justify-between items-center py-1">
               <span className="text-gray-700">Discount:</span>
               <span className="font-medium text-black">
                 - Rs. {discount.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between border-t border-gray-300 py-1 font-bold text-black">
-              <span>Total Price:</span>
-              <span>Rs. {totalPrice.toFixed(2)}</span>
+            <div className="flex justify-between items-center border-t border-gray-300 pt-2 pb-1 font-bold text-black gap-4">
+              <span className="text-sm">Total Price:</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm">Rs.</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  name="total_price"
+                  value={form.total_price}
+                  onChange={handleChange}
+                  className={`${inputClass} !w-32 text-right font-bold border-black bg-white py-1`}
+                />
+              </div>
             </div>
           </div>
 
