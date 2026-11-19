@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import CreateQuotationModal from "@/components/CreateQuotationModal";
@@ -26,8 +26,9 @@ interface Quotation {
   discount: number;
   total_price: number;
   created_at: string;
-  // ❌ NO top-level event
 }
+
+type FilterMode = "all" | "name" | "date";
 
 export default function QuotationsPage() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
@@ -46,6 +47,10 @@ export default function QuotationsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterClientName, setFilterClientName] = useState("");
   const filterRef = useRef<HTMLDivElement>(null);
 
   const fetchQuotations = async () => {
@@ -101,6 +106,7 @@ export default function QuotationsPage() {
 
   const handleView = (q: Quotation) => setViewingQuotation(q);
 
+  // ✅ PRINT SINGLE QUOTATION (with Terms & Conditions points at the bottom)
   const handlePrint = (q: Quotation) => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
@@ -134,6 +140,10 @@ export default function QuotationsPage() {
             .numeric-cell { text-align: right; }
             .center-cell { text-align: center; }
             .total-row { background: #e8f5e8 !important; font-weight: bold; font-size: 12px; }
+            .terms-section { margin-top: 14px; padding-top: 10px; border-top: 1px solid #000; display: block !important; visibility: visible !important; }
+            .terms-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; display: block; }
+            .terms-list { margin: 0; padding-left: 14px; font-size: 9px; line-height: 1.55; color: #222; display: block; }
+            .terms-list li { margin-bottom: 3px; display: list-item; }
             .datetime-footer { text-align: left; padding-top: 10px; margin-top: auto; border-top: 1px solid #ccc; font-size: 10px; color: #555; }
             @media print { body { padding: 0; } .print-container { border: none; padding: 0; } }
           </style>
@@ -236,6 +246,21 @@ export default function QuotationsPage() {
               </table>
             </div>
 
+            <div class="terms-section">
+              <div class="terms-title">Terms &amp; Conditions</div>
+              <ul class="terms-list">
+                <li>A 50% advance payment is required to confirm the booking. The remaining 50% balance must be paid on or before the event day. Booking is confirmed only after receipt of the advance. Advance is non-refundable on client cancellation.</li>
+                <li>Photography and videography services will be provided according to the agreed package. Additional hours or extra coverage will be charged separately. The client must inform us in advance about any changes to the event schedule or venue.</li>
+                <li>Edited photographs will be delivered within 15–20 working days. Edited videos/highlights will be delivered within 30–45 working days. Final deliverables will be shared via Google Drive or another agreed platform. RAW photos and unedited footage are not included unless agreed separately.</li>
+                <li>Any additional services — extra photographers, videographers, albums, prints, or additional editing — will be charged separately. Any changes to the agreed package may result in additional charges.</li>
+                <li>In case of cancellation, the advance payment is non-refundable. Rescheduling is subject to availability. Any additional expenses due to rescheduling may be charged separately.</li>
+                <li>The client is responsible for providing correct event date, time, and venue details, and for ensuring the photography team has proper access to the venue. Any delay caused by the client or event arrangements may affect coverage time.</li>
+                <li>Final edited photos and videos will be retained for up to 60 days after delivery. Clients are responsible for downloading and keeping backups. RAW files and original footage are not guaranteed to be stored permanently.</li>
+                <li>All photographs and videos remain the intellectual property of the photographer. Selected photos may be used for portfolio, website, and social media promotion subject to client consent. Commercial use or resale requires prior written permission.</li>
+                <li>All payments must be made through the agreed payment method. Any outstanding balance must be cleared before final delivery of the agreed photographs and videos.</li>
+              </ul>
+            </div>
+
             <div class="datetime-footer">
               Printed on: ${new Date().toLocaleDateString(
                 "en-IN"
@@ -272,13 +297,62 @@ export default function QuotationsPage() {
     }
   };
 
-  // ✅ Show "Service (Event)" per item
   const serviceNamesPreview = (q: Quotation) =>
     Array.isArray(q.services)
       ? q.services
           .map((s) => (s.event ? `${s.name} (${s.event})` : s.name))
           .join(", ")
       : "";
+
+  const handleFilterSelect = (mode: FilterMode) => {
+    setFilterMode(mode);
+    setFilterDate("");
+    setFilterClientName("");
+    setSearchTerm("");
+    setIsFilterOpen(false);
+  };
+
+  const uniqueClientNames = useMemo(() => {
+    const names = new Set<string>();
+    quotations.forEach((q) => {
+      if (q.client_name) names.add(q.client_name.trim());
+    });
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [quotations]);
+
+  const filteredQuotations = quotations.filter((q) => {
+    if (filterMode === "name") {
+      if (!filterClientName) return true;
+      return q.client_name.trim() === filterClientName;
+    }
+
+    if (filterMode === "date") {
+      if (!filterDate) return true;
+      const created = new Date(q.created_at).toISOString().slice(0, 10);
+      return created === filterDate;
+    }
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch =
+        q.quotation_number.toLowerCase().includes(term) ||
+        q.client_name.toLowerCase().includes(term) ||
+        (q.client_email && q.client_email.toLowerCase().includes(term)) ||
+        (q.client_phone_number && q.client_phone_number.includes(term)) ||
+        serviceNamesPreview(q).toLowerCase().includes(term) ||
+        new Date(q.created_at)
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .toLowerCase()
+          .includes(term);
+      if (!matchesSearch) return false;
+    }
+
+    return true;
+  });
 
   return (
     <main className="min-h-screen bg-white p-4 md:p-6 text-black tracking-wider">
@@ -306,6 +380,12 @@ export default function QuotationsPage() {
               className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
             >
               Costing
+            </Link>
+            <Link
+              href="/bookings"
+              className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
+            >
+              Bookings
             </Link>
 
             <button
@@ -336,6 +416,57 @@ export default function QuotationsPage() {
               </svg>
             </button>
 
+            <div className="relative">
+              <div className="flex h-[30px] items-center rounded-full border border-black bg-white px-3 shadow-sm transition focus-within:bg-black focus-within:text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-3.5 h-3.5 mr-2 text-current"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  placeholder={
+                    filterMode === "name"
+                      ? "Search client name..."
+                      : "Search..."
+                  }
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-32 bg-transparent text-xs tracking-wider outline-none placeholder:text-gray-500 focus:placeholder:text-gray-300"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="ml-1 text-current hover:opacity-70"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-3 h-3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="relative" ref={filterRef}>
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -359,17 +490,94 @@ export default function QuotationsPage() {
               </button>
 
               {isFilterOpen && (
-                <div className="absolute right-0 mt-2 w-48 border border-gray-300 bg-white shadow-lg z-10 rounded-xl overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 border border-gray-300 bg-white shadow-lg z-10 rounded-xl overflow-hidden">
                   <div className="p-2 space-y-1">
-                    <button className="w-full text-left px-3 py-1.5 text-xs text-black hover:bg-gray-100 transition-colors rounded-lg">
+                    <button
+                      onClick={() => handleFilterSelect("all")}
+                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                        filterMode === "all"
+                          ? "bg-black text-white"
+                          : "text-black hover:bg-gray-100"
+                      }`}
+                    >
                       All Quotations
                     </button>
-                    <button className="w-full text-left px-3 py-1.5 text-xs text-black hover:bg-gray-100 transition-colors rounded-lg">
-                      Pending Payment
+                    <button
+                      onClick={() => handleFilterSelect("name")}
+                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                        filterMode === "name"
+                          ? "bg-black text-white"
+                          : "text-black hover:bg-gray-100"
+                      }`}
+                    >
+                      By Client Name
                     </button>
-                    <button className="w-full text-left px-3 py-1.5 text-xs text-black hover:bg-gray-100 transition-colors rounded-lg">
-                      Fully Paid
+                    <button
+                      onClick={() => {
+                        setFilterMode("date");
+                        setFilterClientName("");
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                        filterMode === "date"
+                          ? "bg-black text-white"
+                          : "text-black hover:bg-gray-100"
+                      }`}
+                    >
+                      By Created Date
                     </button>
+
+                    {filterMode === "name" && (
+                      <div className="px-2 pt-2 pb-1">
+                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
+                          Select client
+                        </label>
+                        <select
+                          value={filterClientName}
+                          onChange={(e) => setFilterClientName(e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black bg-white"
+                        >
+                          <option value="">All clients</option>
+                          {uniqueClientNames.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {filterMode === "date" && (
+                      <div className="px-2 pt-2 pb-1">
+                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
+                          Pick a date
+                        </label>
+                        <input
+                          type="date"
+                          value={filterDate}
+                          onChange={(e) => setFilterDate(e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black"
+                        />
+                      </div>
+                    )}
+
+                    {(filterMode !== "all" ||
+                      filterDate ||
+                      filterClientName ||
+                      searchTerm) && (
+                      <button
+                        onClick={() => {
+                          setFilterMode("all");
+                          setFilterDate("");
+                          setFilterClientName("");
+                          setSearchTerm("");
+                          setIsFilterOpen(false);
+                        }}
+                        className="mt-1 w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -415,7 +623,7 @@ export default function QuotationsPage() {
                     ))}
                   </tr>
                 ))
-              ) : quotations.length === 0 ? (
+              ) : filteredQuotations.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -428,13 +636,18 @@ export default function QuotationsPage() {
                         priority
                       />
                       <p className="text-sm font-semibold text-black tracking-wider">
-                        No Quotations
+                        {searchTerm ||
+                        filterMode !== "all" ||
+                        filterClientName ||
+                        filterDate
+                          ? "No matching quotations"
+                          : "No Quotations"}
                       </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                quotations.map((q) => (
+                filteredQuotations.map((q) => (
                   <tr
                     key={q.id}
                     className="hover:bg-gray-50 transition-colors"
