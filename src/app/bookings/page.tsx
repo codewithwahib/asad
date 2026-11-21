@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import ProtectedRoute from "@/components/ProtectedRoute"; // ✅ Protection import
 
 // ✅ per-service shape (same as quotations / invoices)
 interface ServiceItem {
@@ -293,114 +294,45 @@ export default function BookingsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-white p-4 md:p-6 text-black tracking-wider">
-      <div className="mx-auto max-w-[1400px]">
-        {/* Header */}
-        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h1 className="text-xl font-bold tracking-wider text-black">
-            Bookings
-          </h1>
+    <ProtectedRoute> {/* ✅ Yahan se protection shuru */}
+      <main className="min-h-screen bg-white p-4 md:p-6 text-black tracking-wider">
+        <div className="mx-auto max-w-[1400px]">
+          {/* Header */}
+          <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <h1 className="text-xl font-bold tracking-wider text-black">
+              Bookings
+            </h1>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/"
-              className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
-            >
-              Quotations
-            </Link>
-            <Link
-              href="/invoices"
-              className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
-            >
-              Invoices
-            </Link>
-            <Link
-              href="/costing"
-              className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
-            >
-              Costing
-            </Link>
-            <Link
-              href="/services"
-              className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
-            >
-              Services
-            </Link>
-
-            <button
-              onClick={fetchBookings}
-              className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-black bg-white text-black shadow-sm transition hover:bg-black hover:text-white"
-              title="Refresh"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-3.5 h-3.5"
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/"
+                className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-                />
-              </svg>
-            </button>
+                Quotations
+              </Link>
+              <Link
+                href="/invoices"
+                className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
+              >
+                Invoices
+              </Link>
+              <Link
+                href="/costing"
+                className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
+              >
+                Costing
+              </Link>
+              <Link
+                href="/services"
+                className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
+              >
+                Services
+              </Link>
 
-            {/* ✅ Search Bar */}
-            <div className="relative">
-              <div className="flex h-[30px] items-center rounded-full border border-black bg-white px-3 shadow-sm transition focus-within:bg-black focus-within:text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-3.5 h-3.5 mr-2 text-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-32 bg-transparent text-xs tracking-wider outline-none placeholder:text-gray-500 focus:placeholder:text-gray-300"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="ml-1 text-current hover:opacity-70"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                      className="w-3 h-3"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="relative" ref={filterRef}>
               <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                onClick={fetchBookings}
                 className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-black bg-white text-black shadow-sm transition hover:bg-black hover:text-white"
-                title="Filter"
+                title="Refresh"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -413,288 +345,284 @@ export default function BookingsPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
                   />
                 </svg>
               </button>
 
-              {isFilterOpen && (
-                <div className="absolute right-0 mt-2 w-56 border border-gray-300 bg-white shadow-lg z-10 rounded-xl overflow-hidden">
-                  <div className="p-2 space-y-1">
+              {/* ✅ Search Bar */}
+              <div className="relative">
+                <div className="flex h-[30px] items-center rounded-full border border-black bg-white px-3 shadow-sm transition focus-within:bg-black focus-within:text-white">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-3.5 h-3.5 mr-2 text-current"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-32 bg-transparent text-xs tracking-wider outline-none placeholder:text-gray-500 focus:placeholder:text-gray-300"
+                  />
+                  {searchTerm && (
                     <button
-                      onClick={() => handleFilterSelect("all")}
-                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
-                        filterMode === "all"
-                          ? "bg-black text-white"
-                          : "text-black hover:bg-gray-100"
-                      }`}
+                      onClick={() => setSearchTerm("")}
+                      className="ml-1 text-current hover:opacity-70"
                     >
-                      All Bookings
-                    </button>
-                    <button
-                      onClick={() => handleFilterSelect("name")}
-                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
-                        filterMode === "name"
-                          ? "bg-black text-white"
-                          : "text-black hover:bg-gray-100"
-                      }`}
-                    >
-                      By Client Name
-                    </button>
-                    <button
-                      onClick={() => handleFilterSelect("date")}
-                      className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
-                        filterMode === "date"
-                          ? "bg-black text-white"
-                          : "text-black hover:bg-gray-100"
-                      }`}
-                    >
-                      By Event Date
-                    </button>
-
-                    {filterMode === "name" && (
-                      <div className="px-2 pt-2 pb-1">
-                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
-                          Select client
-                        </label>
-                        <select
-                          value={filterClientName}
-                          onChange={(e) => setFilterClientName(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black bg-white"
-                        >
-                          <option value="">All clients</option>
-                          {uniqueClientNames.map((name) => (
-                            <option key={name} value={name}>
-                              {name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {filterMode === "date" && (
-                      <div className="px-2 pt-2 pb-1">
-                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
-                          Pick event date
-                        </label>
-                        <input
-                          type="date"
-                          value={filterDate}
-                          onChange={(e) => setFilterDate(e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black"
-                        />
-                      </div>
-                    )}
-
-                    {(filterMode !== "all" ||
-                      filterDate ||
-                      filterClientName ||
-                      searchTerm) && (
-                      <button
-                        onClick={() => {
-                          setFilterMode("all");
-                          setFilterDate("");
-                          setFilterClientName("");
-                          setSearchTerm("");
-                          setIsFilterOpen(false);
-                        }}
-                        className="mt-1 w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-3 h-3"
                       >
-                        Clear Filters
-                      </button>
-                    )}
-                  </div>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div className="relative" ref={filterRef}>
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-black bg-white text-black shadow-sm transition hover:bg-black hover:text-white"
+                  title="Filter"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-3.5 h-3.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                    />
+                  </svg>
+                </button>
+
+                {isFilterOpen && (
+                  <div className="absolute right-0 mt-2 w-56 border border-gray-300 bg-white shadow-lg z-10 rounded-xl overflow-hidden">
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={() => handleFilterSelect("all")}
+                        className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                          filterMode === "all"
+                            ? "bg-black text-white"
+                            : "text-black hover:bg-gray-100"
+                        }`}
+                      >
+                        All Bookings
+                      </button>
+                      <button
+                        onClick={() => handleFilterSelect("name")}
+                        className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                          filterMode === "name"
+                            ? "bg-black text-white"
+                            : "text-black hover:bg-gray-100"
+                        }`}
+                      >
+                        By Client Name
+                      </button>
+                      <button
+                        onClick={() => handleFilterSelect("date")}
+                        className={`w-full text-left px-3 py-1.5 text-xs transition-colors rounded-lg ${
+                          filterMode === "date"
+                            ? "bg-black text-white"
+                            : "text-black hover:bg-gray-100"
+                        }`}
+                      >
+                        By Event Date
+                      </button>
+
+                      {filterMode === "name" && (
+                        <div className="px-2 pt-2 pb-1">
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
+                            Select client
+                          </label>
+                          <select
+                            value={filterClientName}
+                            onChange={(e) => setFilterClientName(e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black bg-white"
+                          >
+                            <option value="">All clients</option>
+                            {uniqueClientNames.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {filterMode === "date" && (
+                        <div className="px-2 pt-2 pb-1">
+                          <label className="mb-1 block text-[10px] uppercase tracking-wider text-gray-500">
+                            Pick event date
+                          </label>
+                          <input
+                            type="date"
+                            value={filterDate}
+                            onChange={(e) => setFilterDate(e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs tracking-wider text-black outline-none focus:border-black"
+                          />
+                        </div>
+                      )}
+
+                      {(filterMode !== "all" ||
+                        filterDate ||
+                        filterClientName ||
+                        searchTerm) && (
+                        <button
+                          onClick={() => {
+                            setFilterMode("all");
+                            setFilterDate("");
+                            setFilterClientName("");
+                            setSearchTerm("");
+                            setIsFilterOpen(false);
+                          }}
+                          className="mt-1 w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                        >
+                          Clear Filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200 text-[11px] tracking-wider">
-            <thead className="bg-gray-50 text-left text-[9px] font-semibold uppercase tracking-wider text-black">
-              <tr>
-                <th className="px-2 py-2 tracking-wider">Inv.No</th>
-                <th className="px-2 py-2 tracking-wider">Client</th>
-                <th className="px-2 py-2 tracking-wider">Event Date</th>
-                <th className="px-2 py-2 tracking-wider">Event Location</th>
-                <th className="px-2 py-2 tracking-wider">Photographer / Videographer</th>
-                <th className="px-2 py-2 tracking-wider">Timing</th>
-                <th className="px-2 py-2 tracking-wider">Outdoor</th>
-                <th className="px-2 py-2 tracking-wider">Services / Events</th>
-                <th className="px-2 py-2 text-center tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <tr key={index} className="animate-pulse">
-                    {Array.from({ length: 9 }).map((_, colIndex) => (
-                      <td key={colIndex} className="px-2 py-2">
-                        <div className="h-3 bg-gray-200 rounded w-full min-w-[30px]"></div>
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : filteredBookings.length === 0 ? (
+          {/* Table */}
+          <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200 text-[11px] tracking-wider">
+              <thead className="bg-gray-50 text-left text-[9px] font-semibold uppercase tracking-wider text-black">
                 <tr>
-                  <td colSpan={9} className="px-4 py-16 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/no.png"
-                        alt="No Bookings"
-                        width={192}
-                        height={192}
-                        className="w-48 h-auto mb-4 object-contain opacity-80"
-                        priority
-                      />
-                      <p className="text-sm font-semibold text-black tracking-wider">
-                        {searchTerm ||
-                        filterMode !== "all" ||
-                        filterClientName ||
-                        filterDate
-                          ? "No matching bookings"
-                          : "No Bookings"}
-                      </p>
-                    </div>
-                  </td>
+                  <th className="px-2 py-2 tracking-wider">Inv.No</th>
+                  <th className="px-2 py-2 tracking-wider">Client</th>
+                  <th className="px-2 py-2 tracking-wider">Event Date</th>
+                  <th className="px-2 py-2 tracking-wider">Event Location</th>
+                  <th className="px-2 py-2 tracking-wider">Photographer / Videographer</th>
+                  <th className="px-2 py-2 tracking-wider">Timing</th>
+                  <th className="px-2 py-2 tracking-wider">Outdoor</th>
+                  <th className="px-2 py-2 tracking-wider">Services / Events</th>
+                  <th className="px-2 py-2 text-center tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                filteredBookings.map((b) => (
-                  <tr
-                    key={b.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-2 py-2 font-medium text-black tracking-wider">
-                      {b.invoice_number}
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index} className="animate-pulse">
+                      {Array.from({ length: 9 }).map((_, colIndex) => (
+                        <td key={colIndex} className="px-2 py-2">
+                          <div className="h-3 bg-gray-200 rounded w-full min-w-[30px]"></div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : filteredBookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <Image
+                          src="/no.png"
+                          alt="No Bookings"
+                          width={192}
+                          height={192}
+                          className="w-48 h-auto mb-4 object-contain opacity-80"
+                          priority
+                        />
+                        <p className="text-sm font-semibold text-black tracking-wider">
+                          {searchTerm ||
+                          filterMode !== "all" ||
+                          filterClientName ||
+                          filterDate
+                            ? "No matching bookings"
+                            : "No Bookings"}
+                        </p>
+                      </div>
                     </td>
-                    <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[100px]"
-                      title={b.client_name}
+                  </tr>
+                ) : (
+                  filteredBookings.map((b) => (
+                    <tr
+                      key={b.id}
+                      className="hover:bg-gray-50 transition-colors"
                     >
-                      {b.client_name}
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-gray-700 tracking-wider">
-                      {b.event_date
-                        ? new Date(b.event_date)
-                            .toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "2-digit",
-                            })
-                            .replace(/ /g, "-")
-                        : "—"}
-                    </td>
-                    <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[140px]"
-                      title={b.event_location || ""}
-                    >
-                      {b.event_location || "—"}
-                    </td>
-                    <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[160px]"
-                      title={b.photographer_videographer || ""}
-                    >
-                      {b.photographer_videographer || "—"}
-                    </td>
-                    <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
-                      {b.timing || "—"}
-                    </td>
-                    <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[160px]"
-                      title={b.outdoor_location_timing || ""}
-                    >
-                      {b.outdoor_location_timing || "—"}
-                    </td>
-                    <td
-                      className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[200px]"
-                      title={servicesPreview(b)}
-                    >
-                      {servicesPreview(b) || "—"}
-                    </td>
-                    <td className="px-2 py-2 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => setViewingBooking(b)}
-                          className="text-gray-500 hover:text-black transition-colors p-1"
-                          title="View"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="w-3.5 h-3.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                        </button>
-
-                        {/* ✅ Edit button */}
-                        <button
-                          onClick={() => setEditingBooking(b)}
-                          className="text-gray-500 hover:text-black transition-colors p-1"
-                          title="Edit"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="w-3.5 h-3.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
-                            />
-                          </svg>
-                        </button>
-
-                        <button
-                          onClick={() => handlePrint(b)}
-                          className="text-gray-500 hover:text-black transition-colors p-1"
-                          title="Print / PDF"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="w-3.5 h-3.5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"
-                            />
-                          </svg>
-                        </button>
-
-                        {deletingId === b.id ? (
-                          <div className="flex items-center justify-center w-3.5 h-3.5">
-                            <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                          </div>
-                        ) : (
+                      <td className="px-2 py-2 font-medium text-black tracking-wider">
+                        {b.invoice_number}
+                      </td>
+                      <td
+                        className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[100px]"
+                        title={b.client_name}
+                      >
+                        {b.client_name}
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-gray-700 tracking-wider">
+                        {b.event_date
+                          ? new Date(b.event_date)
+                              .toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "2-digit",
+                              })
+                              .replace(/ /g, "-")
+                          : "—"}
+                      </td>
+                      <td
+                        className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[140px]"
+                        title={b.event_location || ""}
+                      >
+                        {b.event_location || "—"}
+                      </td>
+                      <td
+                        className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[160px]"
+                        title={b.photographer_videographer || ""}
+                      >
+                        {b.photographer_videographer || "—"}
+                      </td>
+                      <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
+                        {b.timing || "—"}
+                      </td>
+                      <td
+                        className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[160px]"
+                        title={b.outdoor_location_timing || ""}
+                      >
+                        {b.outdoor_location_timing || "—"}
+                      </td>
+                      <td
+                        className="px-2 py-2 text-black tracking-wider whitespace-nowrap truncate max-w-[200px]"
+                        title={servicesPreview(b)}
+                      >
+                        {servicesPreview(b) || "—"}
+                      </td>
+                      <td className="px-2 py-2 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
-                            onClick={() => handleDelete(b.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors p-1"
-                            title="Delete"
+                            onClick={() => setViewingBooking(b)}
+                            className="text-gray-500 hover:text-black transition-colors p-1"
+                            title="View"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -707,201 +635,276 @@ export default function BookingsPage() {
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                               />
                             </svg>
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      {/* ✅ View Booking Modal */}
-      {viewingBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-xl tracking-wider rounded-2xl">
-            <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
-              <div>
-                <h2 className="text-lg font-bold text-black tracking-wider">
-                  Booking {viewingBooking.invoice_number}
-                </h2>
-                <p className="text-xs text-gray-500 tracking-wider mt-0.5">
-                  Created on{" "}
-                  {new Date(viewingBooking.created_at)
-                    .toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })
-                    .replace(/ /g, "-")}
-                </p>
-              </div>
-              <button
-                onClick={() => setViewingBooking(null)}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-xl leading-none text-gray-400 hover:bg-gray-100 hover:text-black tracking-wider transition-colors"
-              >
-                ×
-              </button>
-            </div>
+                          {/* ✅ Edit button */}
+                          <button
+                            onClick={() => setEditingBooking(b)}
+                            className="text-gray-500 hover:text-black transition-colors p-1"
+                            title="Edit"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                              className="w-3.5 h-3.5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                              />
+                            </svg>
+                          </button>
 
-            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-gray-300 pb-3">
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Client Name
-                </span>
-                <span className="text-black font-medium tracking-wider">
-                  {viewingBooking.client_name}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Invoice No
-                </span>
-                <span className="text-black font-medium tracking-wider">
-                  {viewingBooking.invoice_number}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Event Date
-                </span>
-                <span className="text-black tracking-wider">
-                  {viewingBooking.event_date
-                    ? new Date(viewingBooking.event_date)
-                        .toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                        .replace(/ /g, "-")
-                    : "—"}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Event Location
-                </span>
-                <span className="text-black tracking-wider">
-                  {viewingBooking.event_location || "—"}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Photographer / Videographer
-                </span>
-                <span className="text-black tracking-wider">
-                  {viewingBooking.photographer_videographer || "—"}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Timing
-                </span>
-                <span className="text-black tracking-wider">
-                  {viewingBooking.timing || "—"}
-                </span>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
-                  Outdoor Location / Timing
-                </span>
-                <span className="text-black tracking-wider">
-                  {viewingBooking.outdoor_location_timing || "—"}
-                </span>
-              </div>
-            </div>
+                          <button
+                            onClick={() => handlePrint(b)}
+                            className="text-gray-500 hover:text-black transition-colors p-1"
+                            title="Print / PDF"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                              className="w-3.5 h-3.5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"
+                              />
+                            </svg>
+                          </button>
 
-            <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-300">
-              <table className="min-w-full text-[11px] tracking-wider">
-                <thead className="bg-gray-50 text-left text-[9px] font-semibold uppercase text-black">
-                  <tr>
-                    <th className="px-2 py-2 tracking-wider">Service</th>
-                    <th className="px-2 py-2 tracking-wider w-24">Event</th>
-                    <th className="px-2 py-2 tracking-wider w-28">Date</th>
-                    <th className="px-2 py-2 tracking-wider text-right w-24">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {Array.isArray(viewingBooking.details) &&
-                  viewingBooking.details.length > 0 ? (
-                    viewingBooking.details.map((srv, idx) => {
-                      const dt = srv.date;
-                      return (
-                        <tr key={idx}>
-                          <td className="px-2 py-2 text-black tracking-wider">
-                            <div className="font-semibold">{srv.name}</div>
-                            {srv.description && (
-                              <div className="text-[10px] text-gray-500 italic mt-0.5">
-                                &quot;{srv.description}&quot;
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
-                            {srv.event || "-"}
-                          </td>
-                          <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
-                            {dt
-                              ? new Date(dt)
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                  .replace(/ /g, "-")
-                              : "-"}
-                          </td>
-                          <td className="px-2 py-2 text-right text-black tracking-wider">
-                            {Number(srv.price || 0).toFixed(2)}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="px-2 py-4 text-center text-gray-500 tracking-wider"
-                      >
-                        No services details
+                          {deletingId === b.id ? (
+                            <div className="flex items-center justify-center w-3.5 h-3.5">
+                              <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleDelete(b.id)}
+                              className="text-red-500 hover:text-red-700 transition-colors p-1"
+                              title="Delete"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="w-3.5 h-3.5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setViewingBooking(null)}
-                className="rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100 tracking-wider transition-colors"
-              >
-                Close
-              </button>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
 
-      {/* ✅ Edit Booking Modal */}
-      {editingBooking && (
-        <EditBookingModal
-          booking={editingBooking}
-          onClose={() => setEditingBooking(null)}
-          onSuccess={() => {
-            setEditingBooking(null);
-            fetchBookings();
-          }}
-        />
-      )}
-    </main>
+        {/* ✅ View Booking Modal */}
+        {viewingBooking && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-xl tracking-wider rounded-2xl">
+              <div className="mb-4 flex items-center justify-between border-b border-gray-300 pb-3">
+                <div>
+                  <h2 className="text-lg font-bold text-black tracking-wider">
+                    Booking {viewingBooking.invoice_number}
+                  </h2>
+                  <p className="text-xs text-gray-500 tracking-wider mt-0.5">
+                    Created on{" "}
+                    {new Date(viewingBooking.created_at)
+                      .toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                      .replace(/ /g, "-")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setViewingBooking(null)}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-xl leading-none text-gray-400 hover:bg-gray-100 hover:text-black tracking-wider transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-gray-300 pb-3">
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Client Name
+                  </span>
+                  <span className="text-black font-medium tracking-wider">
+                    {viewingBooking.client_name}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Invoice No
+                  </span>
+                  <span className="text-black font-medium tracking-wider">
+                    {viewingBooking.invoice_number}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Event Date
+                  </span>
+                  <span className="text-black tracking-wider">
+                    {viewingBooking.event_date
+                      ? new Date(viewingBooking.event_date)
+                          .toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                          .replace(/ /g, "-")
+                      : "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Event Location
+                  </span>
+                  <span className="text-black tracking-wider">
+                    {viewingBooking.event_location || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Photographer / Videographer
+                  </span>
+                  <span className="text-black tracking-wider">
+                    {viewingBooking.photographer_videographer || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Timing
+                  </span>
+                  <span className="text-black tracking-wider">
+                    {viewingBooking.timing || "—"}
+                  </span>
+                </div>
+                <div className="sm:col-span-2">
+                  <span className="block text-[10px] uppercase text-gray-500 tracking-wider mb-0.5">
+                    Outdoor Location / Timing
+                  </span>
+                  <span className="text-black tracking-wider">
+                    {viewingBooking.outdoor_location_timing || "—"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto overflow-hidden rounded-xl border border-gray-300">
+                <table className="min-w-full text-[11px] tracking-wider">
+                  <thead className="bg-gray-50 text-left text-[9px] font-semibold uppercase text-black">
+                    <tr>
+                      <th className="px-2 py-2 tracking-wider">Service</th>
+                      <th className="px-2 py-2 tracking-wider w-24">Event</th>
+                      <th className="px-2 py-2 tracking-wider w-28">Date</th>
+                      <th className="px-2 py-2 tracking-wider text-right w-24">
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {Array.isArray(viewingBooking.details) &&
+                    viewingBooking.details.length > 0 ? (
+                      viewingBooking.details.map((srv, idx) => {
+                        const dt = srv.date;
+                        return (
+                          <tr key={idx}>
+                            <td className="px-2 py-2 text-black tracking-wider">
+                              <div className="font-semibold">{srv.name}</div>
+                              {srv.description && (
+                                <div className="text-[10px] text-gray-500 italic mt-0.5">
+                                  &quot;{srv.description}&quot;
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
+                              {srv.event || "-"}
+                            </td>
+                            <td className="px-2 py-2 text-black tracking-wider whitespace-nowrap">
+                              {dt
+                                ? new Date(dt)
+                                    .toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    })
+                                    .replace(/ /g, "-")
+                                : "-"}
+                            </td>
+                            <td className="px-2 py-2 text-right text-black tracking-wider">
+                              {Number(srv.price || 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-2 py-4 text-center text-gray-500 tracking-wider"
+                        >
+                          No services details
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setViewingBooking(null)}
+                  className="rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100 tracking-wider transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ Edit Booking Modal */}
+        {editingBooking && (
+          <EditBookingModal
+            booking={editingBooking}
+            onClose={() => setEditingBooking(null)}
+            onSuccess={() => {
+              setEditingBooking(null);
+              fetchBookings();
+            }}
+          />
+        )}
+      </main>
+    </ProtectedRoute> /* ✅ Yahan par khatam */
   );
 }
 
