@@ -215,7 +215,7 @@ export default function CostingPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/"
+                href="/quotations"
                 className="rounded-full border border-black bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-black shadow-sm transition hover:bg-black hover:text-white"
               >
                 Quotations

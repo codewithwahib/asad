@@ -1,38 +1,48 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+// utils/supabase/middleware.ts
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const isLoggedIn = req.cookies.get("auth")?.value === "1";
+export const updateSession = async (request: NextRequest) => {
+  try {
+    let response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
 
-  // ✅ Public routes: Root (Login page), API, aur static assets
-  const isPublicRoute =
-    pathname === "/" ||
-    pathname.startsWith("/api/") ||
-    pathname.startsWith("/_next") ||
-    pathname.match(/\.(png|jpg|jpeg|svg|ico|css|js|woff2?|ttf|webp)$/);
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => {
+              request.cookies.set(name, value)
+            })
+            response = NextResponse.next({
+              request: {
+                headers: request.headers,
+              },
+            })
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
 
-  // ✅ Agar user already logged in hai aur root (/) par aata hai, toh quotations par bhej do
-  if (pathname === "/" && isLoggedIn) {
-    return NextResponse.redirect(new URL("/quotations", req.url));
+    await supabase.auth.getUser()
+
+    return response
+  } catch (error) {
+    return NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
   }
-
-  // ✅ Public route allow karo
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
-
-  // ✅ Protected route + Not logged in -> Root (/) par wapas bhej do
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  return NextResponse.next();
 }
-
-export const config = {
-  // Har route match karo except static files
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|ico|css|js|woff2?|ttf|webp)$).*)",
-  ],
-};
